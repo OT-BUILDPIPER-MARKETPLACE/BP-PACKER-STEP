@@ -22,6 +22,11 @@ source "amazon-ebs" "app" {
   associate_public_ip_address = true
 }
 
+  provisioner "file" {
+    source      = "../"   # Path to your local workspace (relative to packer directory)
+    destination = var.src_dir
+  }
+
 build {
   sources = ["source.amazon-ebs.app"]
 
