@@ -84,6 +84,9 @@ RUN chmod +x /home/buildpiper/build.sh && \
 USER buildpiper
 WORKDIR /home/buildpiper
 
+# Ensure Packer is in PATH for non-root users
+ENV PATH="/usr/local/bin:${PATH}"
+
 # -------------------------------
 # Entrypoint
 # -------------------------------
