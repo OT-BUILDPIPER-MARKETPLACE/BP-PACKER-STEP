@@ -76,7 +76,7 @@ logInfoMessage "Performing action: ${ACTION}"
 
     eval "${PACKER_CMD}"
 
-    logSuccessMessage "AMI build completed successfully"
+    logColoredMessage "32m" "INFO" "AMI build completed successfully"
 }
 catch() {
     TASK_STATUS=1
