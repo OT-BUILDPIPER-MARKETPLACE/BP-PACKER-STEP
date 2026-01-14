@@ -25,17 +25,6 @@ variable "security_group_id" {
   description = "Security group ID to attach to the instance"
 }
 
-variable "ami_base_name" {
-  type        = string
-  description = "Base name for the created AMI"
-  default     = "nimbus"
-}
-
-variable "ami_name" {
-  type        = string
-  description = "Full AMI name with timestamp"
-  default     = "${var.ami_base_name}-{{timestamp}}"
-}
 
 variable "workspace_path" {
   type        = string
