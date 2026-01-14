@@ -55,7 +55,9 @@ logInfoMessage "Performing action: ${ACTION}"
 # ----------------------------------------
 {
     logInfoMessage "Initializing Packer..."
-    packer init packer/
+    # Use absolute path for Packer templates
+    PACKER_DIR="/home/buildpiper/packer"
+    packer init "$PACKER_DIR"
 
     logInfoMessage "Starting AMI build..."
 
@@ -77,13 +79,19 @@ logInfoMessage "Performing action: ${ACTION}"
         done
     fi
 
-    PACKER_CMD+=" packer/packer.pkr.hcl"
+    # Use absolute path for packer.pkr.hcl
+    PACKER_CMD+=" ${PACKER_DIR}/packer.pkr.hcl"
 
     logInfoMessage "Executing: $PACKER_CMD"
     eval "$PACKER_CMD"
 
     logSuccessMessage "AMI build completed successfully"
 }
+catch() {
+    TASK_STATUS=1
+    logErrorMessage "AMI build failed"
+}
+
 catch() {
     TASK_STATUS=1
     logErrorMessage "AMI build failed"
