@@ -1,15 +1,79 @@
-FROM hashicorp/packer
+# -------------------------------
+# Base image (change freely)
+# -------------------------------
+FROM ubuntu:22.04
+# FROM amazonlinux:2
+# FROM debian:12
+# FROM python:3.12-slim
 
-RUN apk add --no-cache --upgrade bash
-RUN apk add jq
+ENV DEBIAN_FRONTEND=noninteractive
 
-ENV SLEEP_DURATION 5s
+# -------------------------------
+# Install runtime deps
+# -------------------------------
+RUN apt-get update && apt-get install -y \
+    curl \
+    unzip \
+    git \
+    jq \
+    openssh-client \
+    ca-certificates \
+    passwd \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY build.sh .
-COPY BP-BASE-SHELL-STEPS .
-ENV INSTRUCTION build
-ENV PACKER_DIR ""
-ENV EXTRA_VARS ""
-ENV ACTIVITY_SUB_TASK_CODE PACKER_PLUGIN_PATH EXTRA_VARS
+# -------------------------------
+# Create buildpiper user & group
+# -------------------------------
+RUN groupadd -g 65522 buildpiper && \
+    useradd -u 65522 -g buildpiper -m -d /home/buildpiper buildpiper
 
-ENTRYPOINT [ "./build.sh" ]
+# -------------------------------
+# BuildPiper directory layout
+# -------------------------------
+RUN mkdir -p \
+    /bp/data \
+    /bp/execution_dir \
+    /bp/workspace \
+    /opt/buildpiper/shell-functions \
+    /home/buildpiper/reports \
+    /home/buildpiper/packer && \
+    chown -R buildpiper:buildpiper \
+        /bp \
+        /opt/buildpiper \
+        /home/buildpiper
+
+# -------------------------------
+# Environment defaults
+# -------------------------------
+ENV SHELL_FUNCTIONS_PATH="/opt/buildpiper/shell-functions" \
+    PACKER_CACHE_DIR="/bp/workspace/.packer-cache" \
+    SLEEP_DURATION="5s"
+
+# -------------------------------
+# Copy BuildPiper shell functions
+# -------------------------------
+COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS/ \
+    /opt/buildpiper/shell-functions/
+
+# -------------------------------
+# Copy packer & entry script
+# -------------------------------
+COPY --chown=buildpiper:buildpiper packer/ /home/buildpiper/packer/
+COPY --chown=buildpiper:buildpiper build.sh /home/buildpiper/build.sh
+
+# -------------------------------
+# Normalize scripts
+# -------------------------------
+RUN chmod +x /home/buildpiper/build.sh && \
+    sed -i 's/\r$//' /home/buildpiper/build.sh
+
+# -------------------------------
+# Drop privileges
+# -------------------------------
+USER buildpiper
+WORKDIR /home/buildpiper
+
+# -------------------------------
+# Entrypoint
+# -------------------------------
+ENTRYPOINT ["/bin/bash", "/home/buildpiper/build.sh"]
