@@ -56,10 +56,6 @@ variable "ami_name" {
   default = "app"
 }
 
-variable "iam_role" {
-  type    = string
-  default = ""
-}
 
 variable "root_volume_size" {
   type    = number
@@ -82,7 +78,7 @@ source "amazon-ebs" "app" {
   ssh_username  = "ubuntu"
 
   ami_name               = "${var.ami_name}-{{timestamp}}"
-  iam_instance_profile   = var.iam_role
+  iam_instance_profile   = "React-VM-Buildpiper"
   ami_description        = "Nimbus App AMI built by BuildPiper"
 
   vpc_id                  = var.vpc_id
