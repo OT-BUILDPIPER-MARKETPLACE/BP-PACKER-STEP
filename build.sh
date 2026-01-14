@@ -68,8 +68,6 @@ logInfoMessage "Performing action: ${ACTION}"
         -var vpc_id='${VPC_ID}' \
         -var subnet_id='${SUBNET_ID}' \
         -var security_group_id='${SECURITY_GROUP_ID}' \
-        -var repo_url='${REPO_URL}' \
-        -var branch='${BRANCH:-master}' \
         -var app_dir='${APP_DIR:-/var/www/html}'"
 
     # Add extra commands at runtime if provided
