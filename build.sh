@@ -87,6 +87,20 @@ catch() {
     TASK_STATUS=1
     logErrorMessage "AMI build failed"
 }
+set +e
+eval "${PACKER_CMD}"
+PACKER_EXIT_CODE=$?
+set -e
+
+if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
+    logColoredMessage "32m" "INFO" "AMI build completed successfully"
+
+    # Mandatory BuildPiper status update
+    saveTaskStatus 0 "${ACTIVITY_SUB_TASK_CODE}" || true
+
+    logInfoMessage "Exiting step with SUCCESS"
+    exit 0
+fi
 
 # ----------------------------------------
 # Save task status (MANDATORY for BuildPiper)
