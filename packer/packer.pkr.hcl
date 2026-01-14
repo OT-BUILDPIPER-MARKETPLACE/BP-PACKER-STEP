@@ -31,6 +31,11 @@ variable "security_group_id" {
   type = string
 }
 
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
+}
+
 variable "app_dir" {
   type    = string
   default = "/var/www/html"
@@ -46,6 +51,26 @@ variable "run_commands" {
   default = ""
 }
 
+variable "ami_name" {
+  type    = string
+  default = "app"
+}
+
+variable "iam_role" {
+  type    = string
+  default = ""
+}
+
+variable "root_volume_size" {
+  type    = number
+  default = 8
+}
+
+variable "root_volume_type" {
+  type    = string
+  default = "gp3"
+}
+
 ########################
 # Source
 ########################
@@ -53,16 +78,25 @@ variable "run_commands" {
 source "amazon-ebs" "app" {
   region        = var.aws_region
   source_ami    = var.source_ami
-  instance_type = "t3.micro"
+  instance_type = var.instance_type
   ssh_username  = "ubuntu"
 
-  ami_name = "app-{{timestamp}}"
+  ami_name               = "${var.ami_name}-{{timestamp}}"
+  iam_instance_profile   = var.iam_role
+  ami_description        = "Nimbus App AMI built by BuildPiper"
 
-  vpc_id            = var.vpc_id
-  subnet_id         = var.subnet_id
-  security_group_id = var.security_group_id
-
+  vpc_id                  = var.vpc_id
+  subnet_id               = var.subnet_id
+  security_group_id       = var.security_group_id
   associate_public_ip_address = true
+
+  launch_block_device_mappings = [
+    {
+      device_name = "/dev/sda1"
+      volume_size = var.root_volume_size
+      volume_type = var.root_volume_type
+    }
+  ]
 }
 
 ########################
