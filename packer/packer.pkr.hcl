@@ -78,7 +78,7 @@ build {
   }
 
   provisioner "shell" {
-    script = "scripts/bootstrap.sh"
+    script = "/home/buildpiper/packer/scripts/bootstrap.sh"
     environment_vars = [
       "APP_DIR=${var.app_dir}",
       "RUN_COMMANDS=${var.run_commands}"
