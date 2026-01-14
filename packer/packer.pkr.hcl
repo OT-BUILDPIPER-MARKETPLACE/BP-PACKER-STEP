@@ -22,13 +22,14 @@ source "amazon-ebs" "app" {
   associate_public_ip_address = true
 }
 
+
+build {
+  sources = ["source.amazon-ebs.app"]
+
   provisioner "file" {
     source      = "../"   # Path to your local workspace (relative to packer directory)
     destination = var.src_dir
   }
-
-build {
-  sources = ["source.amazon-ebs.app"]
 
   provisioner "shell" {
     script = "scripts/bootstrap.sh"
