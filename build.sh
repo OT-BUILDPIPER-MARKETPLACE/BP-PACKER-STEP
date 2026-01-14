@@ -2,33 +2,27 @@
 set -uo pipefail
 [[ "${DEBUG:-false}" == "true" ]] && set -x
 
-# ----------------------------------------
-# Constants
-# ----------------------------------------
 SHELL_FUNCTIONS_PATH="/opt/buildpiper/shell-functions"
 ACTIVITY_SUB_TASK_CODE="PACKER_AMI_BUILD"
 
-# ----------------------------------------
-# Load BP shell modules
-# ----------------------------------------
 source "${SHELL_FUNCTIONS_PATH}/functions.sh"
 source "${SHELL_FUNCTIONS_PATH}/log-functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/str-functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/file-functions.sh"
 source "${SHELL_FUNCTIONS_PATH}/aws-functions.sh"
 
-# ----------------------------------------
-# Initialize
-# ----------------------------------------
 TASK_STATUS=0
 CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
+
 logInfoMessage "Processing codebase at [${CODEBASE_LOCATION}]"
 cd "${CODEBASE_LOCATION}"
 
-# ----------------------------------------
-# Assume IAM role if requested
-# ----------------------------------------
+# --------------------------------------------------
+# Assume role
+# --------------------------------------------------
 if [ "${ASSUME_OTHER_ROLE:-false}" == "true" ]; then
-    : "${ACCOUNT_ID:?ACCOUNT_ID is required}"
-    : "${ROLE_NAME:?ROLE_NAME is required}"
+    : "${ACCOUNT_ID:?}"
+    : "${ROLE_NAME:?}"
     : "${ROLE_SESSION_NAME:=buildpiper-session}"
 
     logInfoMessage "Assuming IAM role ${ROLE_NAME}..."
@@ -39,20 +33,16 @@ if [ "${ASSUME_OTHER_ROLE:-false}" == "true" ]; then
     export AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"$role_output")
     export AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"$role_output")
     export AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"$role_output")
-
     logInfoMessage "Successfully assumed role: ${ROLE_NAME}"
 fi
 
-# ----------------------------------------
-# Initialize Packer
-# ----------------------------------------
+# --------------------------------------------------
+# Build with Packer
+# --------------------------------------------------
 PACKER_DIR="/home/buildpiper/packer"
 logInfoMessage "Initializing Packer in ${PACKER_DIR}"
 packer init "${PACKER_DIR}"
 
-# ----------------------------------------
-# Build Packer command
-# ----------------------------------------
 PACKER_CMD="packer build \
   -var-file=${PACKER_DIR}/variables.pkr.hcl \
   -var aws_region='${AWS_REGION}' \
@@ -75,28 +65,32 @@ fi
 logInfoMessage "Executing Packer command:"
 logInfoMessage "${PACKER_CMD}"
 
-# ----------------------------------------
-# Run Packer (capture exit code safely)
-# ----------------------------------------
 set +e
 eval "${PACKER_CMD}"
 PACKER_EXIT_CODE=$?
 set -e
 
-# ----------------------------------------
-# Update task status
-# ----------------------------------------
-if [ "${PACKER_EXIT_CODE}" -ne 0 ]; then
-    TASK_STATUS=1
-    logInfoMessage "AMI build failed"
-else
+# --------------------------------------------------
+# Exit handling
+# --------------------------------------------------
+if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
     TASK_STATUS=0
     logInfoMessage "AMI build completed successfully"
+    saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}" || true
+    logInfoMessage "Congratulations ${ACTIVITY_SUB_TASK_CODE} succeeded!!!"
+else
+    TASK_STATUS=1
+    logErrorMessage "AMI build failed"
+    saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}" || true
 fi
 
-saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}"
-
-# ----------------------------------------
-# END OF SCRIPT
-# Let BuildPiper handle lifecycle naturally
-# ----------------------------------------
+# --------------------------------------------------
+# Force exit container safely
+# --------------------------------------------------
+logInfoMessage "Force exiting container to ensure it stops completely"
+# Give BuildPiper logs a moment to flush
+sleep 2
+# Kill PID 1 (main container process)
+kill -TERM 1 || true
+# As a fallback
+exit "${TASK_STATUS}"
