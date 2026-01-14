@@ -1,30 +1,39 @@
 #!/bin/bash
+set -euo pipefail
 
-source  functions.sh
-source  log-functions.sh
-source  str-functions.sh
-source  file-functions.sh
-source  aws-functions.sh
+echo "Starting Packer build"
 
-echo "Manage the packer code available at [$WORKSPACE] and have mounted at [${CODEBASE_DIR}/${PACKER_DIR}]"
-sleep  $SLEEP_DURATION
+# -------------------------
+# Validate required vars
+# -------------------------
+REQUIRED_VARS=(
+  AWS_REGION
+  SOURCE_AMI
+  VPC_ID
+  SUBNET_ID
+  SECURITY_GROUP_ID
+  REPO_URL
+)
 
-
-cd  ${WORKSPACE}/${CODEBASE_DIR}/${PACKER_DIR}
-logInfoMessage "packer ${INSTRUCTION}"
-
-packer ${INSTRUCTION} ${EXTRA_VARS}
-
-if [ $? -eq 0 ]
-then
-    logInfoMessage "Congratulations packer build succeeded!!!"
-    generateOutput ${ACTIVITY_SUB_TASK_CODE} build true "Congratulations ami created sucessfully "
-elif [ "${VALIDATION_FAILURE_ACTION}" == "FAILURE" ]
-    then
-    logErrorMessage "Please check packer build failed!!!"
-    generateOutput ${ACTIVITY_SUB_TASK_CODE} false "Please check packer build failed!!!"
+for var in "${REQUIRED_VARS[@]}"; do
+  if [[ -z "${!var:-}" ]]; then
+    echo "Missing env var: $var"
     exit 1
-    else
-    logWarningMessage "Please check packer build failed!!!"
-    generateOutput ${ACTIVITY_SUB_TASK_CODE} true "Please check packer build failed!!!"
-fi 
+  fi
+done
+
+cd /app/packer
+
+packer init .
+
+packer build \
+  -var aws_region="$AWS_REGION" \
+  -var source_ami="$SOURCE_AMI" \
+  -var vpc_id="$VPC_ID" \
+  -var subnet_id="$SUBNET_ID" \
+  -var security_group_id="$SECURITY_GROUP_ID" \
+  -var repo_url="$REPO_URL" \
+  -var branch="${BRANCH:-main}" \
+  -var app_dir="${APP_DIR:-/var/www/html}" \
+  -var "run_commands=${RUN_COMMANDS}" \
+  packer.pkr.hcl
