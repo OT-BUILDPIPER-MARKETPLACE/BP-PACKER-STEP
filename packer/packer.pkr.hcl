@@ -33,8 +33,6 @@ build {
   provisioner "shell" {
     script = "scripts/bootstrap.sh"
     environment_vars = [
-      "REPO_URL=${var.repo_url}",
-      "BRANCH=${var.branch}",
       "APP_DIR=${var.app_dir}",
       "RUN_COMMANDS=${join("::", var.run_commands)}"
     ]
