@@ -107,4 +107,4 @@ fi
 # ----------------------------------------
 saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}"
 
-
+exit 1
