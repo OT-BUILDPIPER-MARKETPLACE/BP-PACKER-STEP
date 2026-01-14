@@ -11,7 +11,7 @@ source "amazon-ebs" "app" {
   region        = var.aws_region
   source_ami    = var.source_ami
   instance_type = "t3.micro"
-  ssh_username  = "ubuntu"
+  ssh_username  = "root"
 
   ami_name = "app-{{timestamp}}"
 
