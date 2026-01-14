@@ -86,13 +86,6 @@ source "amazon-ebs" "app" {
   security_group_id       = var.security_group_id
   associate_public_ip_address = true
 
-  launch_block_device_mappings = [
-    {
-      device_name = "/dev/sda1"
-      volume_size = var.root_volume_size
-      volume_type = var.root_volume_type
-    }
-  ]
 }
 
 ########################
