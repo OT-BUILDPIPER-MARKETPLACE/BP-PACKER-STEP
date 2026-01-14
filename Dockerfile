@@ -65,8 +65,13 @@ RUN mkdir -p \
 # Environment defaults
 # -------------------------------
 ENV SHELL_FUNCTIONS_PATH="/opt/buildpiper/shell-functions" \
+    ACTIVITY_SUB_TASK_CODE="Packer_ami_step" \
+    VALIDATION_FAILURE_ACTION="FAILURE" \
     PACKER_CACHE_DIR="/bp/workspace/.packer-cache" \
     SLEEP_DURATION="5s"
+
+
+    
 
 # -------------------------------
 # Copy BuildPiper shell functions
