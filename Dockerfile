@@ -22,6 +22,17 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------
+# Install Packer (REQUIRED)
+# -------------------------------
+ARG PACKER_VERSION=1.10.2
+
+RUN curl -fsSL https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip \
+    -o /tmp/packer.zip && \
+    unzip /tmp/packer.zip -d /usr/local/bin && \
+    chmod +x /usr/local/bin/packer && \
+    rm -f /tmp/packer.zip
+
+# -------------------------------
 # Create buildpiper user & group
 # -------------------------------
 RUN groupadd -g 65522 buildpiper && \
@@ -56,7 +67,7 @@ COPY --chown=buildpiper:buildpiper BP-BASE-SHELL-STEPS/ \
     /opt/buildpiper/shell-functions/
 
 # -------------------------------
-# Copy packer & entry script
+# Copy packer templates & entry script
 # -------------------------------
 COPY --chown=buildpiper:buildpiper packer/ /home/buildpiper/packer/
 COPY --chown=buildpiper:buildpiper build.sh /home/buildpiper/build.sh
