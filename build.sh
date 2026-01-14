@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+SHELL_FUNCTIONS_PATH="/opt/buildpiper/shell-functions"
 # ----------------------------------------
 # Load BuildPiper shell framework
 # ----------------------------------------
