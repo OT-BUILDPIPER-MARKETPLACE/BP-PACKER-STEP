@@ -2,10 +2,53 @@ packer {
   required_plugins {
     amazon = {
       source  = "github.com/hashicorp/amazon"
-      version = "~> 1.2"
+      version = "~> 1.3"
     }
   }
 }
+
+########################
+# Variables
+########################
+
+variable "aws_region" {
+  type = string
+}
+
+variable "source_ami" {
+  type = string
+}
+
+variable "vpc_id" {
+  type = string
+}
+
+variable "subnet_id" {
+  type = string
+}
+
+variable "security_group_id" {
+  type = string
+}
+
+variable "app_dir" {
+  type    = string
+  default = "/var/www/html"
+}
+
+variable "src_dir" {
+  type    = string
+  default = "/tmp/app"
+}
+
+variable "run_commands" {
+  type    = string
+  default = ""
+}
+
+########################
+# Source
+########################
 
 source "amazon-ebs" "app" {
   region        = var.aws_region
@@ -22,12 +65,15 @@ source "amazon-ebs" "app" {
   associate_public_ip_address = true
 }
 
+########################
+# Build
+########################
 
 build {
   sources = ["source.amazon-ebs.app"]
 
   provisioner "file" {
-    source      = "../"   # Path to your local workspace (relative to packer directory)
+    source      = "../"
     destination = var.src_dir
   }
 
@@ -35,7 +81,7 @@ build {
     script = "scripts/bootstrap.sh"
     environment_vars = [
       "APP_DIR=${var.app_dir}",
-      "RUN_COMMANDS=${join("::", var.run_commands)}"
+      "RUN_COMMANDS=${var.run_commands}"
     ]
   }
 }
