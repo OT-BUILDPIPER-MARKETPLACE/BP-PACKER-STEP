@@ -1,39 +1,53 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Starting Packer build"
+# ----------------------------------------
+# Load BuildPiper shell framework
+# ----------------------------------------
+source "${SHELL_FUNCTIONS_PATH}/functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/log-functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/str-functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/file-functions.sh"
+source "${SHELL_FUNCTIONS_PATH}/aws-functions.sh"
 
-# -------------------------
-# Validate required vars
-# -------------------------
-REQUIRED_VARS=(
-  AWS_REGION
-  SOURCE_AMI
-  VPC_ID
-  SUBNET_ID
-  SECURITY_GROUP_ID
-  REPO_URL
-)
+TASK_STATUS=0
 
-for var in "${REQUIRED_VARS[@]}"; do
-  if [[ -z "${!var:-}" ]]; then
-    echo "Missing env var: $var"
-    exit 1
-  fi
-done
+# ----------------------------------------
+# Resolve codebase location
+# ----------------------------------------
+CODEBASE_LOCATION="${WORKSPACE}/${CODEBASE_DIR}"
+logInfoMessage "Processing codebase at [${CODEBASE_LOCATION}]"
 
-cd /app/packer
+cd "${CODEBASE_LOCATION}"
 
-packer init .
+logInfoMessage "Performing action: ${ACTION}"
 
-packer build \
-  -var aws_region="$AWS_REGION" \
-  -var source_ami="$SOURCE_AMI" \
-  -var vpc_id="$VPC_ID" \
-  -var subnet_id="$SUBNET_ID" \
-  -var security_group_id="$SECURITY_GROUP_ID" \
-  -var repo_url="$REPO_URL" \
-  -var branch="${BRANCH:-main}" \
-  -var app_dir="${APP_DIR:-/var/www/html}" \
-  -var "run_commands=${RUN_COMMANDS}" \
-  packer.pkr.hcl
+# ----------------------------------------
+# Main execution
+# ----------------------------------------
+{
+    logInfoMessage "Initializing Packer"
+    packer init packer/
+
+    logInfoMessage "Starting AMI build"
+    packer build \
+      -var aws_region="${AWS_REGION}" \
+      -var source_ami="${SOURCE_AMI}" \
+      -var vpc_id="${VPC_ID}" \
+      -var subnet_id="${SUBNET_ID}" \
+      -var security_group_id="${SECURITY_GROUP_ID}" \
+      packer/packer.pkr.hcl
+
+    logSuccessMessage "AMI build completed successfully"
+}
+catch() {
+    TASK_STATUS=1
+    logErrorMessage "AMI build failed"
+}
+
+# ----------------------------------------
+# Save task status (VERY IMPORTANT)
+# ----------------------------------------
+saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}"
+
+exit "${TASK_STATUS}"
