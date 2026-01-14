@@ -36,11 +36,6 @@ if [ "${ASSUME_OTHER_ROLE:-false}" == "true" ]; then
         --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}" \
         --role-session-name "${ROLE_SESSION_NAME}")
 
-    if [ $? -ne 0 ]; then
-        logErrorMessage "Failed to assume role."
-        exit 1
-    fi
-
     export AWS_ACCESS_KEY_ID=$(echo "$role_output" | jq -r '.Credentials.AccessKeyId')
     export AWS_SECRET_ACCESS_KEY=$(echo "$role_output" | jq -r '.Credentials.SecretAccessKey')
     export AWS_SESSION_TOKEN=$(echo "$role_output" | jq -r '.Credentials.SessionToken')
@@ -55,44 +50,34 @@ logInfoMessage "Performing action: ${ACTION}"
 # ----------------------------------------
 {
     logInfoMessage "Initializing Packer..."
-    # Use absolute path for Packer templates
+
     PACKER_DIR="/home/buildpiper/packer"
-    packer init "$PACKER_DIR"
+    packer init "${PACKER_DIR}"
 
     logInfoMessage "Starting AMI build..."
 
-    # Base Packer command with mandatory variables
-PACKER_CMD="packer build \
-  -var-file=/home/buildpiper/packer/variables.pkr.hcl \
-  -var aws_region='${AWS_REGION}' \
-  -var source_ami='${SOURCE_AMI}' \
-  -var vpc_id='${VPC_ID}' \
-  -var subnet_id='${SUBNET_ID}' \
-  -var security_group_id='${SECURITY_GROUP_ID}' \
-  -var app_dir='${APP_DIR:-/var/www/html}' \
-  /home/buildpiper/packer"
+    PACKER_CMD="packer build \
+      -var-file=${PACKER_DIR}/variables.pkr.hcl \
+      -var aws_region='${AWS_REGION}' \
+      -var source_ami='${SOURCE_AMI}' \
+      -var vpc_id='${VPC_ID}' \
+      -var subnet_id='${SUBNET_ID}' \
+      -var security_group_id='${SECURITY_GROUP_ID}' \
+      -var app_dir='${APP_DIR:-/var/www/html}' \
+      ${PACKER_DIR}"
 
-
-    # Add extra commands at runtime if provided
+    # Optional runtime commands (passed as single string)
     if [ -n "${RUN_COMMANDS:-}" ]; then
-        for cmd in "${RUN_COMMANDS[@]}"; do
-            PACKER_CMD+=" -var 'run_commands[]=${cmd}'"
-        done
+        PACKER_CMD+=" -var \"run_commands=${RUN_COMMANDS}\""
     fi
 
-    # Use absolute path for packer.pkr.hcl
-    PACKER_CMD+=" ${PACKER_DIR}/packer.pkr.hcl"
+    logInfoMessage "Executing Packer command:"
+    logInfoMessage "${PACKER_CMD}"
 
-    logInfoMessage "Executing: $PACKER_CMD"
-    eval "$PACKER_CMD"
+    eval "${PACKER_CMD}"
 
     logSuccessMessage "AMI build completed successfully"
 }
-catch() {
-    TASK_STATUS=1
-    logErrorMessage "AMI build failed"
-}
-
 catch() {
     TASK_STATUS=1
     logErrorMessage "AMI build failed"
