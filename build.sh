@@ -93,4 +93,4 @@ catch() {
 # ----------------------------------------
 saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}"
 
-exit "${TASK_STATUS}"
+
