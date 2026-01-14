@@ -67,7 +67,6 @@ logInfoMessage "Performing action: ${ACTION}"
       -var src_dir='${SRC_DIR:-/tmp/app}' \
       -var ami_name='${AMI_NAME:-app}' \
       -var instance_type='${INSTANCE_TYPE:-t3.micro}' \
-      -var iam_role='${IAM_ROLE:-}' \
       -var root_volume_size='${ROOT_VOLUME_SIZE:-8}' \
       -var root_volume_type='${ROOT_VOLUME_TYPE:-gp3}' \
       ${PACKER_DIR}"
