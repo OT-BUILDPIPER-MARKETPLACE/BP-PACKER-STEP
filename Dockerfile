@@ -22,6 +22,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -------------------------------
+# Install AWS CLI
+# -------------------------------
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/tmp/awscliv2.zip" && \
+    unzip /tmp/awscliv2.zip && \
+    ./aws/install && \
+    rm -rf /tmp/awscliv2.zip ./aws
+    
+# -------------------------------
 # Install Packer (REQUIRED)
 # -------------------------------
 ARG PACKER_VERSION=1.10.2
