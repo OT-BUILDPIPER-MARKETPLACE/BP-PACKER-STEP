@@ -62,13 +62,16 @@ logInfoMessage "Performing action: ${ACTION}"
     logInfoMessage "Starting AMI build..."
 
     # Base Packer command with mandatory variables
-    PACKER_CMD="packer build \
-        -var aws_region='${AWS_REGION}' \
-        -var source_ami='${SOURCE_AMI}' \
-        -var vpc_id='${VPC_ID}' \
-        -var subnet_id='${SUBNET_ID}' \
-        -var security_group_id='${SECURITY_GROUP_ID}' \
-        -var app_dir='${APP_DIR:-/var/www/html}'"
+PACKER_CMD="packer build \
+  -var-file=/home/buildpiper/packer/variables.pkr.hcl \
+  -var aws_region='${AWS_REGION}' \
+  -var source_ami='${SOURCE_AMI}' \
+  -var vpc_id='${VPC_ID}' \
+  -var subnet_id='${SUBNET_ID}' \
+  -var security_group_id='${SECURITY_GROUP_ID}' \
+  -var app_dir='${APP_DIR:-/var/www/html}' \
+  /home/buildpiper/packer"
+
 
     # Add extra commands at runtime if provided
     if [ -n "${RUN_COMMANDS:-}" ]; then
