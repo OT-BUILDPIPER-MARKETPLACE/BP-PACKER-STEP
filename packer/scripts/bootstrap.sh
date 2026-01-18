@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Directories
 APP_DIR="/var/www/html"
-SRC_DIR="/tmp/app"   # Packer uploaded files here
+SRC_DIR="/tmp"   # Packer uploaded files here
 
 echo "🔧 Installing base packages"
 sudo apt-get update
