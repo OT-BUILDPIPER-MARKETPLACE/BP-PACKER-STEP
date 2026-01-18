@@ -47,7 +47,7 @@ fi
 # Packer Build
 # --------------------------------------------------
 PACKER_DIR="/home/buildpiper/packer"
-PACKER_JSON_OUTPUT="/bp/workspace/packer-output.json"
+PACKER_LOG_FILE="/bp/workspace/packer-build.log"
 
 logInfoMessage "Initializing Packer in ${PACKER_DIR}"
 packer init "${PACKER_DIR}"
@@ -71,28 +71,25 @@ if [ -n "${RUN_COMMANDS:-}" ]; then
     PACKER_CMD+=" -var \"run_commands=${RUN_COMMANDS}\""
 fi
 
-logInfoMessage "Executing Packer build (JSON output enabled)"
+logInfoMessage "Executing Packer build"
 logInfoMessage "${PACKER_CMD}"
 
 set +e
-eval "${PACKER_CMD} -json" > "${PACKER_JSON_OUTPUT}"
-PACKER_EXIT_CODE=$?
+eval "${PACKER_CMD}" | tee "${PACKER_LOG_FILE}"
+PACKER_EXIT_CODE=${PIPESTATUS[0]}
 set -e
 
 # --------------------------------------------------
-# Extract AMI ID (JSON – RELIABLE)
+# Extract AMI ID (UI OUTPUT – VERIFIED)
 # --------------------------------------------------
 if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
-    AMI_ID=$(jq -r '
-        .builds[]
-        | select(.artifact_id != null)
-        | .artifact_id
-    ' "${PACKER_JSON_OUTPUT}" \
-    | tail -1 \
-    | cut -d: -f2)
+    AMI_ID=$(awk '
+        /AMIs were created:/ {found=1; next}
+        found && /ami-/ {print $2; exit}
+    ' "${PACKER_LOG_FILE}")
 
-    if [ -z "${AMI_ID}" ] || [ "${AMI_ID}" = "null" ]; then
-        logErrorMessage "Packer succeeded but AMI ID could not be extracted from JSON output"
+    if [ -z "${AMI_ID}" ]; then
+        logErrorMessage "Packer succeeded but AMI ID could not be extracted"
         PACKER_EXIT_CODE=1
     fi
 fi
@@ -106,7 +103,6 @@ if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
     logInfoMessage "AMI build completed successfully"
     logInfoMessage "Generated AMI ID: ${AMI_ID}"
 
-    # Export for next pipeline steps
     echo "AMI_ID=${AMI_ID}" >> /bp/workspace/output.env
     echo "AWS_REGION=${AWS_REGION}" >> /bp/workspace/output.env
 
