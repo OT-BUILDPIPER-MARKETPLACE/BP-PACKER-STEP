@@ -47,6 +47,7 @@ fi
 # Packer Build
 # --------------------------------------------------
 PACKER_DIR="/home/buildpiper/packer"
+PACKER_JSON_OUTPUT="/bp/workspace/packer-output.json"
 
 logInfoMessage "Initializing Packer in ${PACKER_DIR}"
 packer init "${PACKER_DIR}"
@@ -70,28 +71,28 @@ if [ -n "${RUN_COMMANDS:-}" ]; then
     PACKER_CMD+=" -var \"run_commands=${RUN_COMMANDS}\""
 fi
 
-logInfoMessage "Executing Packer build command"
+logInfoMessage "Executing Packer build (JSON output enabled)"
 logInfoMessage "${PACKER_CMD}"
 
 set +e
-PACKER_OUTPUT=$(eval "${PACKER_CMD} -machine-readable")
+eval "${PACKER_CMD} -json" > "${PACKER_JSON_OUTPUT}"
 PACKER_EXIT_CODE=$?
 set -e
 
-# Save machine-readable output for debugging
-echo "${PACKER_OUTPUT}" > /bp/workspace/packer-machine.log
-
 # --------------------------------------------------
-# Extract AMI ID (FIXED)
+# Extract AMI ID (JSON – RELIABLE)
 # --------------------------------------------------
 if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
-    AMI_ID=$(echo "${PACKER_OUTPUT}" \
-        | awk -F, '$2=="artifact" && $4=="id" {print $5}' \
-        | cut -d: -f2 \
-        | tail -1)
+    AMI_ID=$(jq -r '
+        .builds[]
+        | select(.artifact_id != null)
+        | .artifact_id
+    ' "${PACKER_JSON_OUTPUT}" \
+    | tail -1 \
+    | cut -d: -f2)
 
-    if [ -z "${AMI_ID}" ]; then
-        logErrorMessage "Packer succeeded but AMI ID could not be extracted"
+    if [ -z "${AMI_ID}" ] || [ "${AMI_ID}" = "null" ]; then
+        logErrorMessage "Packer succeeded but AMI ID could not be extracted from JSON output"
         PACKER_EXIT_CODE=1
     fi
 fi
