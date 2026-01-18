@@ -19,8 +19,11 @@ echo "📂 Deploying application files"
 # Ensure target directory exists
 sudo mkdir -p "$APP_DIR"
 
-# Sync files with sudo
-sudo rsync -a --delete "$SRC_DIR"/ "$APP_DIR"/
+for folder in "$SRC_DIR"/*/; do
+    echo "📂 Copying contents of $folder to $APP_DIR"
+    sudo rsync -a --delete "$folder"/ "$APP_DIR"/
+done
+
 
 # Make scripts executable if they exist
 if [ -d "$APP_DIR/.scripts" ]; then
