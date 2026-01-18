@@ -32,13 +32,13 @@ if [ "${ASSUME_OTHER_ROLE:-false}" == "true" ]; then
 
     logInfoMessage "Assuming IAM role ${ROLE_NAME}..."
 
-    role_output=$(aws sts assume-role \
+    ROLE_OUTPUT=$(aws sts assume-role \
         --role-arn "arn:aws:iam::${ACCOUNT_ID}:role/${ROLE_NAME}" \
         --role-session-name "${ROLE_SESSION_NAME}")
 
-    export AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"$role_output")
-    export AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"$role_output")
-    export AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"$role_output")
+    export AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"${ROLE_OUTPUT}")
+    export AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"${ROLE_OUTPUT}")
+    export AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"${ROLE_OUTPUT}")
 
     logInfoMessage "Successfully assumed role: ${ROLE_NAME}"
 fi
@@ -78,13 +78,17 @@ PACKER_OUTPUT=$(eval "${PACKER_CMD} -machine-readable")
 PACKER_EXIT_CODE=$?
 set -e
 
+# Save machine-readable output for debugging
+echo "${PACKER_OUTPUT}" > /bp/workspace/packer-machine.log
+
 # --------------------------------------------------
-# Extract AMI ID
+# Extract AMI ID (FIXED)
 # --------------------------------------------------
 if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
     AMI_ID=$(echo "${PACKER_OUTPUT}" \
-        | awk -F, '$3=="artifact" && $6=="id" {print $7}' \
-        | cut -d: -f2 | tail -1)
+        | awk -F, '$2=="artifact" && $4=="id" {print $5}' \
+        | cut -d: -f2 \
+        | tail -1)
 
     if [ -z "${AMI_ID}" ]; then
         logErrorMessage "Packer succeeded but AMI ID could not be extracted"
@@ -101,8 +105,9 @@ if [ "${PACKER_EXIT_CODE}" -eq 0 ]; then
     logInfoMessage "AMI build completed successfully"
     logInfoMessage "Generated AMI ID: ${AMI_ID}"
 
-    # Export for next pipeline steps (Launch Template / ASG)
+    # Export for next pipeline steps
     echo "AMI_ID=${AMI_ID}" >> /bp/workspace/output.env
+    echo "AWS_REGION=${AWS_REGION}" >> /bp/workspace/output.env
 
     saveTaskStatus "${TASK_STATUS}" "${ACTIVITY_SUB_TASK_CODE}" || true
     logInfoMessage "Congratulations ${ACTIVITY_SUB_TASK_CODE} succeeded!!! AMI=${AMI_ID}"
