@@ -97,11 +97,13 @@ build {
 
 provisioner "shell" {
   inline = [
-    "sudo rm -rf /tmp/app",
-    "sudo mkdir -p /tmp/app",
-    "sudo chmod 755 /tmp/app"
+    "sudo rm -rf ${var.src_dir}",
+    "sudo mkdir -p ${var.src_dir}",
+    "sudo chown -R ubuntu:ubuntu ${var.src_dir}",
+    "chmod 755 ${var.src_dir}"
   ]
 }
+
   provisioner "file" {
     source      = "../"
     destination = var.src_dir
