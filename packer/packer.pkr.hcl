@@ -95,6 +95,13 @@ source "amazon-ebs" "app" {
 build {
   sources = ["source.amazon-ebs.app"]
 
+provisioner "shell" {
+  inline = [
+    "sudo rm -rf /tmp/app",
+    "sudo mkdir -p /tmp/app",
+    "sudo chmod 755 /tmp/app"
+  ]
+}
   provisioner "file" {
     source      = "../"
     destination = var.src_dir
