@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-
+export DEPLOYMENT_GROUP_NAME="ship.nimbuspost-deploy-group"
 # Directories
 APP_DIR="/var/www/html"
 SRC_DIR="/home/ubuntu"   # Packer uploaded files here
