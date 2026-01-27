@@ -21,7 +21,7 @@ sudo mkdir -p "$APP_DIR"
 
 for folder in "$SRC_DIR"/*/; do
     echo "📂 Copying contents of $folder to $APP_DIR"
-    sudo rsync -av --delete --exclude='.git' --exclude='.git/' --no-owner --no-group --no-perms "$SRC_DIR"/ "$APP_DIR"/
+    sudo rsync -av --delete --exclude='.git' --exclude='.git/' --no-owner --no-group --no-perms "$folder"/ "$APP_DIR"/
 done
 
 
