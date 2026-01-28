@@ -40,6 +40,8 @@ echo "⚙️ Running AfterInstall scripts"
 [ -f "$APP_DIR/.scripts/parameter_env.sh" ] && sudo bash "$APP_DIR/.scripts/parameter_env.sh" || echo "⚠️ parameter_env.sh not found"
 [ -f "$APP_DIR/.scripts/install_composer.sh" ] && sudo bash "$APP_DIR/.scripts/install_composer.sh" || echo "⚠️ install_composer.sh not found"
 [ -f "$APP_DIR/.scripts/copy_files.sh" ] && sudo bash "$APP_DIR/.scripts/copy_files.sh" || echo "⚠️ copy_files.sh not found"
-
+[ -f "$APP_DIR/.ship.nimbuspost/index.php" ] && sudo cp "$APP_DIR/.ship.nimbuspost/index.php" "$APP_DIR/index.php" || echo "⚠️ index.php not found"
+[ -f "$APP_DIR/.ship.nimbuspost/config.php" ] && sudo cp "$APP_DIR/.ship.nimbuspost/config.php" "$APP_DIR/application/config/config.php" || echo "⚠️ config.php not found"
+[ -f "$APP_DIR/.ship.nimbuspost/.htaccess" ] && sudo cp "$APP_DIR/.ship.nimbuspost/.htaccess" "$APP_DIR/.htaccess" || echo "⚠️ .htaccess not found"
 echo "✅ Deployment complete"
 
