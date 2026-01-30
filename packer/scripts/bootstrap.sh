@@ -24,6 +24,8 @@ for folder in "$SRC_DIR"/*/; do
     sudo rsync -av --delete --exclude='.git' --exclude='.git/' --no-owner --no-group --no-perms "$folder"/ "$APP_DIR"/
 done
 
+[ -d "$APP_DIR/reports" ] && sudo mv "$APP_DIR/reports" "$APP_DIR/bp-reports" || echo "⚠️ reports directory not found"
+
 
 # Make scripts executable if they exist
 if [ -d "$APP_DIR/.scripts" ]; then
