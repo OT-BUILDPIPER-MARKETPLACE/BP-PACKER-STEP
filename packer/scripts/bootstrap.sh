@@ -6,7 +6,7 @@ APP_DIR="/var/www/html"
 SRC_DIR="/home/ubuntu"   # Packer uploaded files here
 
 echo "🔧 Installing base packages"
-sudo apt-get install -y git rsync unzip
+sudo apt-get install -y rsync unzip
 
 # ----------------------------
 # List contents of SRC_DIR recursively
