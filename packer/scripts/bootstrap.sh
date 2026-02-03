@@ -6,7 +6,6 @@ APP_DIR="/var/www/html"
 SRC_DIR="/home/ubuntu"   # Packer uploaded files here
 
 echo "🔧 Installing base packages"
-sudo apt-get update
 sudo apt-get install -y git rsync unzip
 
 # ----------------------------
