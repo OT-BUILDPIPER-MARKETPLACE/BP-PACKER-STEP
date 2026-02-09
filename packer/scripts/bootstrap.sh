@@ -12,8 +12,8 @@ sudo apt-get install -y git rsync unzip
 # ----------------------------
 # List contents of SRC_DIR recursively
 # ----------------------------
-echo "📂 Listing all contents of source directory: $SRC_DIR"
-find "$SRC_DIR" -type d -o -type f | sort
+# echo "📂 Listing all contents of source directory: $SRC_DIR"
+# find "$SRC_DIR" -type d -o -type f | sort
 
 echo "📂 Deploying application files"
 # Ensure target directory exists
