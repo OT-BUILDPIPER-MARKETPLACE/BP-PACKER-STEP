@@ -38,7 +38,7 @@ echo "⚙️ Running BeforeInstall script"
 [ -f "$APP_DIR/scripts/install_dependencies.sh" ] && sudo bash "$APP_DIR/scripts/install_dependencies.sh" || echo "⚠️ install_dependencies.sh not found"
 
 echo "⚙️ Running AfterInstall scripts"
-#[ -f "$APP_DIR/scripts/configure_server.sh" ] && sudo bash "$APP_DIR/scripts/configure_server.sh" || echo "⚠️ configure_server.sh not found"
+[ -f "$APP_DIR/scripts/configure_server.sh" ] && sudo bash "$APP_DIR/scripts/configure_server.sh" || echo "⚠️ configure_server.sh not found"
 #[ -f "$APP_DIR/scripts/start_server.sh" ] && sudo bash "$APP_DIR/scripts/start_server.sh" || echo "⚠️ start_server.sh not found"
 #[ -f "$APP_DIR/scripts/validate_service.sh" ] && sudo bash "$APP_DIR/scripts/validate_service.sh" || echo "⚠️ validate_service.sh not found"
 
