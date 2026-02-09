@@ -27,20 +27,20 @@ done
 
 
 # Make scripts executable if they exist
-if [ -d "$APP_DIR/.scripts" ]; then
-    echo "🔧 Making scripts executable in $APP_DIR/.scripts"
-    sudo chmod +x "$APP_DIR/.scripts/"*.sh || true
+if [ -d "$APP_DIR/scripts" ]; then
+    echo "🔧 Making scripts executable in $APP_DIR/scripts"
+    sudo chmod +x "$APP_DIR/scripts/"*.sh || true
 else
-    echo "⚠️ No .scripts directory found in $APP_DIR"
+    echo "⚠️ No scripts directory found in $APP_DIR"
 fi
 
 echo "⚙️ Running BeforeInstall script"
-[ -f "$APP_DIR/.scripts/install_dependencies.sh" ] && sudo bash "$APP_DIR/.scripts/install_dependencies.sh" || echo "⚠️ install_dependencies.sh not found"
+[ -f "$APP_DIR/scripts/install_dependencies.sh" ] && sudo bash "$APP_DIR/scripts/install_dependencies.sh" || echo "⚠️ install_dependencies.sh not found"
 
 echo "⚙️ Running AfterInstall scripts"
-[ -f "$APP_DIR/.scripts/configure_server.sh" ] && sudo bash "$APP_DIR/.scripts/configure_server.sh" || echo "⚠️ configure_server.sh not found"
-[ -f "$APP_DIR/.scripts/start_server.sh" ] && sudo bash "$APP_DIR/.scripts/start_server.sh" || echo "⚠️ start_server.sh not found"
-[ -f "$APP_DIR/.scripts/validate_service.sh" ] && sudo bash "$APP_DIR/.scripts/validate_service.sh" || echo "⚠️ validate_service.sh not found"
+[ -f "$APP_DIR/scripts/configure_server.sh" ] && sudo bash "$APP_DIR/scripts/configure_server.sh" || echo "⚠️ configure_server.sh not found"
+[ -f "$APP_DIR/scripts/start_server.sh" ] && sudo bash "$APP_DIR/scripts/start_server.sh" || echo "⚠️ start_server.sh not found"
+[ -f "$APP_DIR/scripts/validate_service.sh" ] && sudo bash "$APP_DIR/scripts/validate_service.sh" || echo "⚠️ validate_service.sh not found"
 [ -f "$APP_DIR/.ship.nimbuspost/index.php" ] && sudo cp "$APP_DIR/.ship.nimbuspost/index.php" "$APP_DIR/index.php" || echo "⚠️ index.php not found"
 [ -f "$APP_DIR/.ship.nimbuspost/config.php" ] && sudo cp "$APP_DIR/.ship.nimbuspost/config.php" "$APP_DIR/application/config/config.php" || echo "⚠️ config.php not found"
 [ -f "$APP_DIR/.ship.nimbuspost/.htaccess" ] && sudo cp "$APP_DIR/.ship.nimbuspost/.htaccess" "$APP_DIR/.htaccess" || echo "⚠️ .htaccess not found"
