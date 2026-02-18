@@ -6,7 +6,7 @@ APP_DIR="/var/www/html"
 SRC_DIR="/home/ubuntu"   # Packer uploaded files here
 
 echo "🔧 Installing base packages"
-sudo apt-get install -y rsync unzip
+sudo apt-get install -y rsync unzip tzdata
 
 echo "🕒 Setting timezone to IST (Asia/Kolkata)"
 sudo timedatectl set-timezone Asia/Kolkata
