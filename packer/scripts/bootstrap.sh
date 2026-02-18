@@ -8,11 +8,15 @@ SRC_DIR="/home/ubuntu"   # Packer uploaded files here
 echo "🔧 Installing base packages"
 sudo apt-get install -y rsync unzip
 
+echo "🕒 Setting timezone to IST (Asia/Kolkata)"
+sudo timedatectl set-timezone Asia/Kolkata
+timedatectl
+
 # ----------------------------
 # List contents of SRC_DIR recursively
 # ----------------------------
 echo "📂 Listing all contents of source directory: $SRC_DIR"
-find "$SRC_DIR" -type d -o -type f | sort
+# find "$SRC_DIR" -type d -o -type f | sort
 
 echo "📂 Deploying application files"
 # Ensure target directory exists
